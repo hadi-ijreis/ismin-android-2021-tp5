@@ -95,7 +95,25 @@ class MainActivity : AppCompatActivity(), BookCreator {
     }
 
     override fun onBookCreated(book: Book) {
-        bookshelf.addBook(book);
-        displayBookList()
+        bookService.createBook(book)
+            .enqueue(object : Callback<Book> {
+                override fun onResponse(
+                    call: Call<Book>,
+                    response: Response<Book>
+                ) {
+                    val createdBook: Book? = response.body()
+
+                    createdBook?.let {
+                        bookshelf.addBook(book);
+                    }
+
+                    displayBookList();
+                }
+
+                override fun onFailure(call: Call<Book>, t: Throwable) {
+                    Toast.makeText(this@MainActivity, "Error when trying to create a book" + t.localizedMessage, Toast.LENGTH_LONG).show()
+                }
+            }
+            )
     }
 }
